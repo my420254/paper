@@ -2,7 +2,6 @@ import os, torch
 import numpy as np
 from transformers import AutoTokenizer
 
-# 从你的主文件 aste.py 导入所需的类和变量
 from aste import SpanASTEModel, load_dataset, BatchLoader, DATASET_CONFIGS, DATA_ROOT, PAPER_ROOT, ENCODER_PATH, DEVICE
 
 dataset = 'res14'  
