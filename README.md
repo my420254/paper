@@ -36,6 +36,17 @@
 
 ### 环境初始化
 ```bash
+# 包的版本：
+torch==2.10.0
+torchaudio==2.10.0
+torchvision==0.25.0
+transformers==4.57.6
+numpy==2.2.6
+scikit-learn==1.7.2
+tqdm==4.67.3
+psutil==7.2.2
+matplotlib==3.10.8
+scipy==1.15.3
 # 解压核心依赖
 unzip Span-ASTE.zip
 # 安装必要库
