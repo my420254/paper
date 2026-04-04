@@ -32,9 +32,8 @@
 
 ---
 
-## 🚦 运行指南
 
-### 环境初始化
+### 核心依赖
 ```bash
 # 包的版本：
 torch==2.10.0
@@ -47,7 +46,4 @@ tqdm==4.67.3
 psutil==7.2.2
 matplotlib==3.10.8
 scipy==1.15.3
-# 解压核心依赖
-unzip Span-ASTE.zip
-# 安装必要库
-pip install torch transformers psutil tqdm numpy
+
