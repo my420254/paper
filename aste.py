@@ -8,64 +8,6 @@ from transformers import AutoModel, AutoTokenizer, get_linear_schedule_with_warm
 import warnings
 
 
-# ============================================================
-# Aspect Sentiment Triplet Extraction — Paper Experiment Framework
-
-# Model: Span-based ASTE with Multi-Layer Feature Fusion
-#        and Adversarial Training (Span-MLFF-AT)
-
-# Core innovations:
-#   1. Multi-Layer Feature Fusion (MLFF)
-#      Residual fusion of intermediate BERT layers [3, 7, 11]
-#      to capture multi-granularity semantic representations.
-
-#   2. Adversarial Training via Fast Gradient Method (AT-FGM)
-#      Embedding-space perturbation during training to improve
-#      robustness against lexical variation and noisy inputs.
-
-# Supported experiment modes (--mode):
-#   main         5-seed main experiment; saves all paper artifacts
-#   ablation     3-seed ablation study (incremental module removal)
-#   sensitivity  1-seed sensitivity analysis on cl_temp & neg_ratio
-#   single       Re-run one specific variant and overwrite its row
-
-# Usage examples:
-#   # Main experiment (5 seeds, all datasets)
-#   python main_aste_paper.py --mode main --datasets res14 lap14 res15 res16
-
-#   # Ablation study (3 seeds)
-#   python main_aste_paper.py --mode ablation --datasets res14 lap14 res15 res16
-
-#   # Sensitivity analysis (1 seed, representative datasets)
-#   python main_aste_paper.py --mode sensitivity --datasets res14 lap14
-
-#   # Re-run one ablation variant and overwrite (others untouched)
-#   python main_aste_paper.py --mode single --datasets res14 \
-#       --variant w_o_AT --single_type ablation
-
-#   # Re-run one main-experiment seed and overwrite
-#   python main_aste_paper.py --mode single --datasets res14 \
-#       --variant 42 --single_type main
-
-# Output layout (paper_results/{dataset}/):
-#   main_results.csv            P/R/F1 per seed (5 seeds)
-#   main_summary.json           mean ± std across seeds
-#   ablation_results.csv        P/R/F1 per variant per seed (3 seeds)
-#   ablation_summary.json       mean ± std per variant
-#   sensitivity_cl_temp.csv     F1 vs cl_temp  (→ line chart)
-#   sensitivity_neg_ratio.csv   F1 vs neg_ratio (→ line chart)
-#   seed{s}_full_model.pt       Best model checkpoint (main exp)
-#   seed{s}_full_preds.json     Full test predictions
-#   seed{s}_full_errors.json    Error cases for Case Study
-#   seed{s}_full_tsne.npz       pair_hidden features for t-SNE
-#   seed{s}_full_span_reprs.npz span representations
-#   seed{s}_full_training_curve.csv  dev-F1 per epoch (→ convergence plot)
-#   seed{s}_full_runtime.json   time / GPU memory / parameter count
-# CUDA_VISIBLE_DEVICES=1 python aste.py --mode main --datasets res14 lap14 res15 res16 && \
-# CUDA_VISIBLE_DEVICES=1 python aste.py --mode ablation --datasets res14 lap14 res15 res16 && \
-# CUDA_VISIBLE_DEVICES=1 python aste.py --mode sensitivity --datasets res14 lap14 res15 res16
-# ============================================================
-
 # ── DeBERTa-v3 JIT patch ─────────────────────────────────────
 import transformers.models.deberta_v2.modeling_deberta_v2 as _dv2
 
@@ -86,14 +28,17 @@ _dv2.make_log_bucket_position = _fixed_log_bucket
 os.environ["PYTORCH_JIT"] = "0"
 warnings.filterwarnings("ignore")
 
-# ============================================================
-# ── Paths & global constants ─────────────────────────────────
-# ============================================================
-DEVICE      = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-ENCODER_PATH = "/home/zmy/.cache/huggingface/hub/models--microsoft--deberta-v3-base/snapshots/8ccc9b6f36199bec6961081d44eb72fb3f7353f3"
-DATA_ROOT    = "GTS/data/ASTE_DATA_V2/"
-PAPER_ROOT   = "./paper_results"
-LOG_ROOT     = "./paper_results/_logs"
+
+DEVICE       = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+ENCODER_PATH = "microsoft/deberta-v3-base" 
+
+DATA_ROOT    = "./data/ASTE_DATA_V2/"
+
+PAPER_ROOT   = "./outputs/paper_results"
+LOG_ROOT     = "./outputs/logs"
+
+# 递归创建必要的文件夹
 for _d in [PAPER_ROOT, LOG_ROOT]:
     os.makedirs(_d, exist_ok=True)
 
