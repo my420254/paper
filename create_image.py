@@ -11,7 +11,7 @@ warnings.filterwarnings('ignore')
 # ==============================================================================
 # 1. 全局学术排版与字体设置
 # ==============================================================================
-FONT_PATH = '/home/zmy/newppp/Times_New_Roman.ttf'
+FONT_PATH = '/Times_New_Roman.ttf'
 if os.path.exists(FONT_PATH):
     fm.fontManager.addfont(FONT_PATH)
     plt.rcParams['font.family'] = 'Times New Roman'
@@ -26,7 +26,7 @@ plt.rcParams['ytick.direction'] = 'in'
 plt.rcParams['xtick.major.width'] = 1.2
 plt.rcParams['ytick.major.width'] = 1.2
 
-DATA_DIR = '/home/zmy/newppp/paper_results'
+DATA_DIR = '/paper_results'
 
 def get_csv_data(dataset, filename):
     filepath = os.path.join(DATA_DIR, dataset, filename)
@@ -89,7 +89,7 @@ def plot_sensitivity():
                frameon=True, edgecolor='black', fontsize=12,
                bbox_to_anchor=(0.5, 0.0), borderaxespad=0.)
 
-    out_file = os.path.join('/home/zmy/newppp', 'sensitivity_analysis.pdf')
+    out_file = os.path.join('/newppp', 'sensitivity_analysis.pdf')
     plt.savefig(out_file, format='pdf', bbox_inches='tight', dpi=300)
     plt.show()
     print(f"✅ 敏感性分析图已保存至: {out_file}\n")
@@ -140,7 +140,7 @@ def plot_tsne():
     ax.legend(loc='lower left', frameon=True, edgecolor='black', fontsize=10)
     
     plt.tight_layout()
-    out_file = os.path.join('/home/zmy/newppp', 'tsne_visualization.pdf')
+    out_file = os.path.join('/newppp', 'tsne_visualization.pdf')
     plt.savefig(out_file, format='pdf', bbox_inches='tight', dpi=300)
     plt.show()
     print(f"✅ t-SNE 可视化图已保存至: {out_file}\n")
