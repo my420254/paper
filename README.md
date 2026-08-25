@@ -1,49 +1,40 @@
-# FASTE: 基于多级特征融合与对抗训练的跨度情感三元组抽取实现
+# FASTE: Span-Based Aspect Sentiment Triplet Extraction via Multi-Level Feature Fusion and Adversarial Training
 
-本仓库提供了论文 **FASTE** (Fused Adversarial Span Triplet Extraction) 的完整官方源代码与实验环境。
+This repository contains the official implementation of **FASTE**, a span-based ASTE framework.
 
----
+## What this work solves
 
-## 📂 文件目录详细说明
+Most span-based ASTE models rely too heavily on the final encoder layer, which drops boundary-sensitive syntactic cues and causes span mismatch.
 
-本仓库结构经过严格优化，确保了从数据预处理到结果可视化的全流程闭环：
+FASTE addresses that by combining:
 
-### 1. 核心逻辑组件
-* **`aste.py`** 这是项目的核心引擎。它实现了 **FASTE** 的完整架构，包括：
-    * **MLFF 模块**：实现了第 3、7、11 层的特征融合逻辑与残差连接。
-    * **AT-FGM 机制**：内置了快速梯度方法的扰动逻辑，用于提升决策边界的鲁棒性。
-    * **训练与推理流水线**：涵盖了困难负采样（Hard-negative mining）、对比学习损失计算以及非极大值抑制（NMS）解码算法。
+- **Multi-Level Feature Fusion (MLFF)**: recovers lower-level syntactic and boundary information from intermediate layers
+- **Adversarial Training (AT-FGM)**: stabilizes optimization when local noise makes the loss landscape irregular
 
-### 2. 特征分析与可视化工具
-* **`extract_tsne.py`** 该脚本负责高维流形空间的降维处理。它从训练好的模型中提取方面-意见对（Aspect-Opinion Pair）的隐藏层表示，并利用 t-SNE 算法生成聚类坐标数据。
-* **`create_image.py`** 学术绘图自动化脚本。它直接读取实验生成的 CSV 原始数据，自动绘制论文中的超参数敏感性热力图与性能分布图。
+## My contribution
 
-### 3. 实验数据与环境依赖
-* **`GTS` (数据集)** 本项目的核心训练与测试数据来源。我们使用了经过严格标准化的 ASTE-Data-V2 基准数据集（涵盖 14res, 14lap, 15res, 16res），以确保与其他基线模型对比时的绝对公平性与可复现性。原始数据仓库可通过以下链接克隆获取：[https://github.com/NJUNLP/GTS.git](https://github.com/NJUNLP/GTS.git)
-* **`Times_New_Roman.ttf`** 学术论文标准字体文件。本项目的所有可视化图表均通过此文件强制执行字体对齐，确保生成的 PDF 矢量图符合顶刊发表的视觉规范。
+- Designed the model structure and training recipe
+- Built the evaluation / visualization pipeline
+- Prepared the paper figures, error analysis, and experimental comparison package
 
-### 4. 实验结果与验证资料
-* **`paper_results.zip`** **这是复现性检查的核心。** 该压缩包包含了：
-    * 所有 5 个随机种子的详细训练日志（`*.log`）。
-    * 各阶段的准确率、召回率、F1 分数收敛数据（`*.csv`）。
-    * 模型预测的原始 JSON 结果，包含了论文中提到的 Case Study 错误案例原型。
-* **`sensitivity_analysis.pdf`** 论文图表原型。展示了对比学习温度系数 $\tau$ 与负采样比例 $\rho$ 的变动对模型稳定性的影响。
-* **`tsne_visualization.pdf`** 论文图表原型。通过彩色聚类图展示了模型如何将有效的三元组与背景噪声在向量空间中暴力分离。
+## Why it matters
 
----
+- Stronger boundary alignment than generation-style ASTE systems
+- Compact enough for real-time deployment
+- Built for reproducible evaluation, not only for paper numbers
 
-## ⚙️ 核心依赖
+## Main result
 
-本实验环境基于以下核心依赖包构建（推荐使用 Anaconda 或 Miniconda 管理环境）：
+On ASTE-Data-V2, FASTE achieves state-of-the-art results among non-generative systems across multiple benchmark domains, including **66.60 F1 on 14lap**.
 
-```bash
-torch==2.10.0
-torchaudio==2.10.0
-torchvision==0.25.0
-transformers==4.57.6
-numpy==2.2.6
-scikit-learn==1.7.2
-tqdm==4.67.3
-psutil==7.2.2
-matplotlib==3.10.8
-scipy==1.15.3
+## Repository contents
+
+- `aste.py`: main training and inference pipeline
+- `extract_tsne.py`: representation analysis
+- `create_image.py`: figure generation
+- `paper_results.zip`: logs and result package
+
+## Status
+
+ESWA submission version.
+
