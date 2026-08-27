@@ -1,69 +1,79 @@
-# FASTE: Span-Based Aspect Sentiment Triplet Extraction via Multi-Level Feature Fusion and Adversarial Training
+# FASTE：多层特征融合与对抗训练的方面级情感三元组抽取
 
-## 中文项目介绍
+FASTE 是一套面向方面级情感三元组抽取（Aspect Sentiment Triplet Extraction, ASTE）的 span-based NLP 框架，当前按 **Expert Systems with Applications（ESWA）** 投稿版本整理。项目聚焦结构化情感抽取中的边界识别、关系组合和情感极性联合建模问题。
 
-FASTE 是我围绕方面级情感三元组抽取（Aspect Sentiment Triplet Extraction, ASTE）完成的 span-based 信息抽取工作，当前按 **Expert Systems with Applications（ESWA）** 投稿材料组织。ESWA 是人工智能应用方向的高影响力期刊，常见分区口径较高；最终分区和录用状态以当年官方结果为准。
-
-这个任务的目标不是只判断一句话情感，而是同时抽取：
+ASTE 的目标是从句子中同时抽取：
 
 ```text
 Aspect Term + Opinion Term + Sentiment Polarity
 ```
 
-难点在于边界识别、跨词搭配、情感极性判断要同时正确。很多生成式方法看起来灵活，但在实体边界和稳定复现上容易出错；传统 span-based 方法又容易过度依赖最后一层 encoder 表示，导致浅层句法和边界线索丢失。
+这比普通情感分类更复杂，因为模型不仅要判断情感倾向，还要同时识别 aspect 边界、opinion 边界，并把两者正确配对。
 
-## 核心方法
+## 研究问题
 
-- **MLFF 多层特征融合**：融合中间层和高层表示，让模型同时保留语义、句法和边界线索，提升 span 边界定位能力。
-- **AT-FGM 对抗训练**：在 embedding 空间引入受控扰动，提升模型对局部噪声和边界模糊样本的鲁棒性。
-- **span-based 解码**：相比纯生成式抽取，更强调结构化边界、可控解码和结果复现。
+现有 ASTE 方法常见两类问题：
 
-## 面试展示重点
+- 生成式方法灵活，但边界控制和复现实验稳定性较弱；
+- 传统判别式 span 方法过度依赖最后一层 encoder 表示，容易丢失浅层句法和边界线索。
 
-- **任务复杂度**：ASTE 同时涉及实体抽取、关系组合和情感分类，是比普通情感分类更复杂的结构化 NLP 任务。
-- **模型设计**：不是简单套 BERT，而是针对“最后层语义强但边界弱”的缺陷做多层特征融合。
-- **实验表现**：在 ASTE-Data-V2 多个领域上取得强结果，其中 14lap F1 达到 **66.60**，在非生成式系统中具备竞争力。
-- **工程完整性**：包含训练、评测、t-SNE 表征分析、图表生成和 paper result package，能支撑论文写作和复现实验。
-- **可讲难点**：span 数量膨胀、负样本极多、边界错一位即判错、不同领域数据分布差异明显、生成式和判别式方法的评测口径不同。
+FASTE 的设计重点是保留判别式方法的可控解码优势，同时通过多层特征融合和对抗训练提升边界鲁棒性。
 
-## 技术关键词
+## 方法设计
 
-`PyTorch` · `Transformer` · `BERT` · `ASTE` · `Span-based Extraction` · `Adversarial Training` · `Feature Fusion` · `NLP`
+### MLFF：多层特征融合
 
-This repository contains the official implementation of **FASTE**, a span-based ASTE framework.
+代码中使用 `MLFF_LAYERS = [3, 7, 11]` 融合低层、中层和高层表示。低层更敏感于词法与边界，中层更适合局部短语组合，高层提供全局语义。多层融合可以缓解只依赖最后一层导致的边界信息弱化问题。
 
-## What this work solves
+### AT-FGM：对抗训练
 
-Most span-based ASTE models rely too heavily on the final encoder layer, which drops boundary-sensitive syntactic cues and causes span mismatch.
+项目在 embedding 空间加入 FGM 扰动，让模型在局部噪声和边界模糊样本上保持稳定。对 ASTE 这类边界敏感任务而言，轻微 token 表示扰动可能导致 span 偏移，对抗训练可以提升模型鲁棒性。
 
-FASTE addresses that by combining:
+### Span-Based 解码
 
-- **Multi-Level Feature Fusion (MLFF)**: recovers lower-level syntactic and boundary information from intermediate layers
-- **Adversarial Training (AT-FGM)**: stabilizes optimization when local noise makes the loss landscape irregular
+FASTE 通过 span representation 构造候选实体和候选关系，相比纯生成式抽取更容易控制输出格式，也便于复现、评估和错误定位。
 
-## My contribution
+## 工程亮点
 
-- Designed the model structure and training recipe
-- Built the evaluation / visualization pipeline
-- Prepared the paper figures, error analysis, and experimental comparison package
+- 单文件主流程覆盖数据读取、batch 构造、模型训练、预测、评测和资源统计；
+- 内置主实验、消融实验和敏感性分析入口；
+- 支持 t-SNE 表征分析和论文图表生成；
+- 代码中保留 `SpanInstance`、`BatchLoader`、`SpanRepresentation`、`SpanASTEModel` 等清晰模块；
+- 结果包包含日志、图表和补充实验材料，便于论文复现和结果审计。
 
-## Why it matters
+## 结果摘要
 
-- Stronger boundary alignment than generation-style ASTE systems
-- Compact enough for real-time deployment
-- Built for reproducible evaluation, not only for paper numbers
+在 ASTE-Data-V2 多个领域上，FASTE 在非生成式系统中取得有竞争力的结果，其中 `14lap` 数据集 F1 达到 **66.60**。这说明多层表示和对抗训练能有效提升 span 边界和关系组合质量。
 
-## Main result
+## 仓库结构
 
-On ASTE-Data-V2, FASTE achieves state-of-the-art results among non-generative systems across multiple benchmark domains, including **66.60 F1 on 14lap**.
+| 文件 | 说明 |
+| --- | --- |
+| `aste.py` | 主训练、预测、评测、消融和敏感性分析流程 |
+| `add_ablation.py` | 补充消融实验 |
+| `extract_tsne.py` | 表征可视化数据抽取 |
+| `create_image.py` | 论文图表生成 |
+| `paper_results.zip` | 实验日志与结果包 |
+| `sensitivity_analysis.pdf` | 敏感性分析图 |
+| `tsne_visualization.pdf` | t-SNE 可视化图 |
 
-## Repository contents
+## 运行方式
 
-- `aste.py`: main training and inference pipeline
-- `extract_tsne.py`: representation analysis
-- `create_image.py`: figure generation
-- `paper_results.zip`: logs and result package
+```bash
+python aste.py --mode main --datasets lap14 res14
+```
 
-## Status
+运行消融或敏感性分析：
 
-ESWA submission version.
+```bash
+python aste.py --mode ablation --datasets lap14
+python aste.py --mode sensitivity --datasets lap14
+```
+
+实际数据路径由 `aste.py` 中的 `DATA_ROOT` 和 `DATASET_CONFIGS` 控制。
+
+## 项目状态
+
+- 论文状态：ESWA 投稿版本；
+- 代码状态：主实验、消融、敏感性分析、可视化和结果包已整理；
+- 许可协议：MIT License。
